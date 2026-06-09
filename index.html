@@ -134,7 +134,7 @@
 
             const [isChatOpen, setIsChatOpen] = React.useState(false);
             const [chatMessages, setChatMessages] = React.useState([
-                { sender: 'curator', text: "您好，我是您的私人藝術策展人。竹南窯場傳承百年的火與泥。不論是尋求風水聚寶盆、送禮新婚入厝、抑或是探尋大師傳承工藝，皆可在此向我諮詢，我將利用 ✨ Gemini 智慧導購大腦 為您提供充滿溫度的客製化推薦。", linkProduct: null }
+                { sender: 'curator', text: "您好，我是客服BB。竹南窯場傳承百年的火與泥。不論是尋求風水聚寶盆、送禮新婚入厝、或是探尋大師傳承工藝，皆可在此向我諮詢，我將利用 ✨ Gemini 智慧導購大腦 為您提供充滿溫度的推薦。", linkProduct: null }
             ]);
             const [userInput, setUserInput] = React.useState('');
             const [isChatLoading, setIsChatLoading] = React.useState(false);
@@ -308,11 +308,11 @@
                     required: ["replyText", "recommendedProductId"]
                 };
 
-                const systemInstruction = `你是一位精通台灣無形文化資產的『竹南交趾陶藝術策展人』。請用優雅、內斂、溫潤的文人藝術語句回答關於空間風水、開業與新婚送禮、收藏投資或工藝保養之問題。
+                const systemInstruction = `你是一位精通台灣無形文化資產的『竹南交趾陶藝術策展人』。請用平易近人的語句回答關於空間風水、開業與新婚送禮、收藏投資或工藝保養之問題。
                 這裡有我們展廊的 15 款大師作品庫，格式為 JSON 陣列：${JSON.stringify(PRODUCT_DATABASE)}。
-                請分析使用者問題中的情感脈絡與核心需求（如：玄關辟邪、新居落成、商業招財、預算考量），並從中挑選最適合的一款交趾陶作品。
+                請分析使用者問題中的對話脈絡與核心需求（如：玄關辟邪、新居落成、商業招財、預算考量），並從中挑選最適合使用者的一款交趾陶作品。
                 請以 JSON 格式回傳：
-                - replyText: 充滿文化涵義、細緻優雅的答覆。
+                - replyText: 平易近人的答覆。
                 - recommendedProductId: 推薦作品的 id（必須嚴格對應資料庫中的 id 值，如 myth-01, fengshui-02 等）。若無適合推薦則回傳空字串。`;
 
                 try {
@@ -329,7 +329,7 @@
                 } catch (error) {
                     setChatMessages(prev => [...prev, {
                         sender: 'curator',
-                        text: "✨ 靈感阻斷：無法連線至大師藝廊的智慧神經網路，這或許是高溫窯爐的磁場干擾，請您稍後再試。",
+                        text: "✨ 很抱歉我的資料庫不夠完整，請您稍後再試。",
                         linkProduct: null
                     }]);
                 } finally {
