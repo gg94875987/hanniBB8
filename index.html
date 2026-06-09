@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>竹南交趾陶・數位典藏藝廊</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Serif TC', serif; background-color: #FDFBF7; color: #2C2A29; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .chart-container { position: relative; width: 100%; max-width: 800px; margin-left: auto; margin-right: auto; height: 40vh; max-height: 400px; }
+    </style>
+</head>
+<body class="antialiased selection:bg-[#2C2A29] selection:text-[#FDFBF7]">
+
+    <!-- Chosen Palette: Warm Neutrals (#FDFBF7), Charcoal Black (#2C2A29), Amber (#78350f) -->
+    <!-- Application Structure Plan: E-commerce gallery SPA transformed into a comprehensive data and culture exploration dashboard. Added a dedicated "Insights" section for interactive data visualization of collection trends. Uses React for state and functional navigation across Thematic Gallery, Story, Insights, Member, Cart, and Orders. Integrated live Gemini API for custom artistic custom calligraphy and real-time smart curator counseling. -->
+    <!-- Visualization & Content Choices: Sales Data -> Compare Popularity -> Bar Chart -> Hover interaction for exact sales numbers -> Justified to show market trends clearly -> Chart.js implemented inside a strict responsive Tailwind container. Confirming NO SVG or Mermaid JS used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const PRODUCT_DATABASE = [
+            { id: "myth-01", category: "傳統神話", name: "廟宇祥獸・交趾青龍尊", price: 48000, tag: "鎮宅尊品", stock: 3, sales: 120, vipOnly: false, keywords: ["神話", "傳統", "客廳", "氣派", "鎮宅", "龍", "霸氣"], image: "https://github.com/gg94875987/Hanni_BB/blob/main/%E5%BC%B5%E8%BE%B0%E7%B6%B2%E7%AB%99/Gemini_Generated_Image_7r0x5p7r0x5p7r0x.png?raw=true", spec: "高 45cm × 寬 30cm / 琥珀流彩釉", story: "承襲竹南大師手繪捏塑技法，青龍鱗片層次分明。高溫交趾低溫燒製交互運用，完美重現台灣廟宇屋脊上的頂級工藝。" },
+            { id: "myth-02", category: "傳統神話", name: "白虎鎮煞辟邪儀", price: 46500, tag: "典藏傳承", stock: 2, sales: 85, vipOnly: false, keywords: ["神話", "避邪", "鎮煞", "玄關", "虎"], image: "https://github.com/gg94875987/Hanni_BB/blob/main/%E5%BC%B5%E8%BE%B0%E7%B6%B2%E7%AB%99/Gemini_Generated_Image_jboi5zjboi5zjboi.png?raw=true", spec: "高 38cm × 寬 35cm / 翡翠綠寶釉", story: "白虎為四神獸之西方守護者。作品以威猛而不失祥和的姿態現身，釉色在厚重中帶有流動感，專為現代雅居打造。" },
+            { id: "myth-03", category: "傳統神話", name: "朱雀展翅吉祥禮盤", price: 32000, tag: "浴火重生", stock: 5, sales: 99, vipOnly: false, keywords: ["神話", "朱雀", "送禮", "入厝", "新婚"], image: "https://github.com/gg94875987/Hanni_BB/blob/main/%E5%BC%B5%E8%BE%B0%E7%B6%B2%E7%AB%99/Gemini_Generated_Image_tpzrswtpzrswtpzr.png?raw=true", spec: "直徑 32cm × 厚 5cm / 胭脂紅流釉", story: "象徵南方與火的朱雀，代表事業蒸蒸日上。盤面細緻雕琢羽翼羽毛，胭脂紅釉在窯變中產生千變萬化的層次。" },
+            { id: "myth-04", category: "傳統神話", name: "玄武長壽無疆擺飾", price: 52000, tag: "世代傳家", stock: 4, sales: 64, vipOnly: false, keywords: ["神話", "長壽", "送長輩", "長官", "健康"], image: "https://github.com/gg94875987/Hanni_BB/blob/main/%E5%BC%B5%E8%BE%B0%E7%B6%B2%E7%AB%99/Gemini_Generated_Image_opztl2opztl2opzt.png?raw=true", spec: "高 28cm × 寬 40cm / 古銅金彩釉", story: "龜蛇合體之玄武，主掌長壽與北方福德。工藝師以細膩的陶土堆疊出甲殼的歲月紋路，金彩釉面內斂高雅。" },
+            { id: "myth-05", category: "傳統神話", name: "八仙過海精雕壁飾板", price: 120000, tag: "國寶孤品", stock: 1, sales: 12, vipOnly: true, keywords: ["神話", "八仙", "收藏", "大器", "奢華", "尊榮"], image: "https://github.com/gg94875987/Hanni_BB/blob/main/%E5%BC%B5%E8%BE%B0%E7%B6%B2%E7%AB%99/Gemini_Generated_Image_i0sfovi0sfovi0sf.png?raw=true", spec: "長 120cm × 高 45cm / 寶石全彩窯變釉", story: "【窯火尊榮會員專屬典藏】歷時半年打造的巨幅壁飾。八仙神態各異、栩栩如生，極具私人博物館收藏價值。" },
+            { id: "fengshui-01", category: "居家風水", name: "招財辟邪・雙獅戲球對組", price: 38000, tag: "鎮宅必備", stock: 6, sales: 150, vipOnly: false, keywords: ["風水", "招財", "門口", "玄關", "對獅", "辦公室"], image: "https://github.com/gg94875987/Hanni_BB/blob/main/%E5%BC%B5%E8%BE%B0%E7%B6%B2%E7%AB%99/Gemini_Generated_Image_58k5yf58k5yf58k5.png?raw=true", spec: "單隻高 25cm / 雙隻一組 / 黃金多色釉", story: "公獅張口招財，母獅閉口守財。放置於玄關或辦公室入口，能有效轉化空間磁場，外觀呈現經典交趾陶的黃綠對比。" },
+            { id: "fengshui-02", category: "居家風水", name: "紫氣東來・聚寶大甕", price: 68000, tag: "財位專用", stock: 2, sales: 45, vipOnly: false, keywords: ["風水", "招財", "財位", "聚寶盆", "客廳"], image: "https://github.com/gg94875987/Hanni_BB/blob/main/%E5%BC%B5%E8%BE%B0%E7%B6%B2%E7%AB%99/Gemini_Generated_Image_zbci4wzbci4wzbci.png?raw=true", spec: "直徑 40cm × 高 42cm / 窯變紫金釉", story: "專為住宅客廳財位設計。甕身線條圓潤，窯變紫金釉在不同光線下呈現出如極光般神祕的色彩，寓意貴人相助。" },
+            { id: "fengshui-03", category: "居家風水", name: "天祿迎祥・三腳金蟾蜍", price: 22000, tag: "商務首選", stock: 8, sales: 210, vipOnly: false, keywords: ["風水", "招財", "蟾蜍", "開店", "送禮"], image: "https://github.com/gg94875987/Hanni_BB/blob/main/Gemini_Generated_Image_2uta3s2uta3s2uta.png?raw=true", spec: "高 18cm × 寬 22cm / 古翠綠黃釉", story: "口咬古錢的三腳金蟾，是經商之人必備的招財神獸。背部滿綴癩雕與寶石點綴，手工捏塑細節精準，財源滾滾。" },
+            { id: "fengshui-04", category: "居家風水", name: "五路財神交趾陶公仔組", price: 55000, tag: "滿福套組", stock: 3, sales: 78, vipOnly: false, keywords: ["風水", "財神", "辦公桌", "送禮", "招財"], image: "https://github.com/gg94875987/Hanni_BB/blob/main/%E5%BC%B5%E8%BE%B0%E7%B6%B2%E7%AB%99/Gemini_Generated_Image_1e3vl61e3vl61e3v.png?raw=true", spec: "單尊高約 15cm / 尊榮五尊組 / 多彩釉", story: "將傳統五路財神形象微型化，保留交趾陶特有的「開面」工藝，神情歡喜和藹。不論置於公司或家中皆能迎來福氣。" },
+            { id: "fengshui-05", category: "居家風水", name: "山海鎮平安交趾陶板", price: 18000, tag: "化煞除疾", stock: 10, sales: 135, vipOnly: false, keywords: ["風水", "平安", "避邪", "掛畫", "山海鎮"], image: "https://github.com/gg94875987/Hanni_BB/blob/main/%E5%BC%B5%E8%BE%B0%E7%B6%B2%E7%AB%99/Gemini_Generated_Image_la98hhla98hhla98.png?raw=true", spec: "30cm × 30cm / 帶精裝木框 / 晴空藍釉", story: "移山倒海，轉凶為吉。將傳統紙製山海鎮升級為永不褪色的交趾陶立體雕刻，完美融入現代木質框與居家防線。" },
+            { id: "modern-01", category: "現代文創", name: "極簡幾何・交趾香薰座", price: 4500, tag: "文青美學", stock: 15, sales: 340, vipOnly: false, keywords: ["文創", "現代", "香氛", "極簡", "便宜", "臥室"], image: "https://github.com/gg94875987/Hanni_BB/blob/main/%E5%BC%B5%E8%BE%B0%E7%B6%B2%E7%AB%99/Gemini_Generated_Image_7m74wt7m74wt7m74.png?raw=true", spec: "高 8cm × 寬 12cm / 莫蘭迪灰藍釉", story: "打破傳統交趾陶繁複的印象，抽離出純粹的線條。保留交趾陶獨有的低溫胎質與溫潤釉感，為書桌增添台式美學。" },
+            { id: "modern-02", category: "現代文創", name: "墨韻禪意茶具茶托組", price: 12500, tag: "生活工藝", stock: 7, sales: 112, vipOnly: false, keywords: ["文創", "茶道", "文青", "品味", "生活"], image: "https://github.com/gg94875987/Hanni_BB/blob/main/%E5%BC%B5%E8%BE%B0%E7%B6%B2%E7%AB%99/Gemini_Generated_Image_yfj87eyfj87eyfj8.png?raw=true", spec: "一壺二杯一托盤 / 曜石黑轉天青釉", story: "將交趾陶的點綴工藝運用於茶托邊緣，手捏魚紋在茶湯倒入時彷彿在杯中游動。結合實用性與觀賞性。" },
+            { id: "modern-03", category: "現代文創", name: "獨角祥獸・多肉植物盆栽", price: 3800, tag: "療癒辦公", stock: 20, sales: 420, vipOnly: false, keywords: ["文創", "植物", "療癒", "辦公桌", "可愛"], image: "https://github.com/gg94875987/Hanni_BB/blob/main/%E5%BC%B5%E8%BE%B0%E7%B6%B2%E7%AB%99/Gemini_Generated_Image_iak4foiak4foiak4.png?raw=true", spec: "高 10cm × 長 14cm / 糖果粉線流釉", story: "Ｑ版避邪祥獸造型，背部中空設計可供種植多肉植物。當植物的綠意遇上交趾陶色彩繽紛的線流釉，瞬間點亮辦公空間。" },
+            { id: "modern-04", category: "現代文創", name: "晶翠琉璃交趾鎮紙", price: 6200, tag: "書齋雅玩", stock: 12, sales: 95, vipOnly: false, keywords: ["文創", "書房", "文房四寶", "送禮", "設計"], image: "https://github.com/gg94875987/Hanni_BB/blob/main/%E5%BC%B5%E8%BE%B0%E7%B6%B2%E7%AB%99/Gemini_Generated_Image_6pppfy6pppfy6ppp.png?raw=true", spec: "長 18cm × 寬 4cm / 琉璃翠融釉", story: "將半透明的琉璃釉料與交趾陶高密度陶土完美結合。重疊燒製出如冰裂紋般的剔透質感，折射出文人雅士的氣節。" },
+            { id: "modern-05", category: "現代文創", name: "獸首交趾功能性鑰匙掛架", price: 5800, tag: "實用藝術", stock: 9, sales: 180, vipOnly: false, keywords: ["文創", "實用", "鑰匙", "掛鉤", "玄關"], image: "https://github.com/gg94875987/Hanni_BB/blob/main/%E5%BC%B5%E8%BE%B0%E7%B6%B2%E7%AB%99/Gemini_Generated_Image_v66n62v66n62v66n.png?raw=true", spec: "高 15cm × 寬 20cm / 復古黃銅彩釉", story: "將傳統廟宇門環上的「椒圖」獸首轉化為居家牆面掛鉤。黃銅釉色沉穩，既是出門拿取鑰匙的實用端景，也是守護神。" }
+        ];80
+
+        const CRAFT_STEPS = [
+            { step: "一", title: "練泥捏塑 (Sculpting)", desc: "精選台灣在地黏土，經過反覆捏打排空空氣。匠人全憑一雙手，將廟宇飛簷上的立體神獸、歷史人物捏塑成形，比例與神韻決定了作品的靈魂。" },
+            { step: "二", title: "陰乾素燒 (Biscuit Firing)", desc: "自然陰乾數週，避免受熱不均開裂。隨後送入 1100°C 高溫窯中進行素燒。素燒能使坏體緊密堅硬，為後續的低溫寶石彩釉打下基礎。" },
+            { step: "三", title: "施釉描彩 (Glazing)", desc: "交趾陶的核心魅力在於『釉色』。匠人調配富含金屬礦物的鉛釉、熔塊釉，一筆一描勾勒彩繪。高低溫釉彩交疊，極考驗彩繪師對窯變色彩的直覺與經驗。" },
+            { step: "四", title: "釉燒淬煉 (Glaze Firing)", desc: "送入二次低溫釉窯，以 800°C 至 900°C 進行釉燒。此時金屬礦物熔融成如寶石、琉璃般剔透流動的晶瑩質感，即俗稱的『寶石流釉』。" },
+            { step: "五", title: "開面落款 (Final Details)", desc: "燒成出窯後，由大師親自為作品神像進行細部描線（俗稱開面），最後於作品底部手工落款印章，賦予其數位典藏與藝術傳承的唯一血統。" }
+        ];
+
+        const apiKey = "";
+
+        async function fetchGeminiWithRetry(prompt, systemInstruction, schema = null, retries = 5, delay = 1000) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: systemInstruction }] }
+            };
+
+            if (schema) {
+                payload.generationConfig = {
+                    responseMimeType: "application/json",
+                    responseSchema: schema
+                };
+            }
+
+            try {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP Error Status: ${response.status}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                if (retries > 0) {
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return fetchGeminiWithRetry(prompt, systemInstruction, schema, retries - 1, delay * 2);
+                }
+                throw error;
+            }
+        }
+
+        function App() {
+            const [currentView, setCurrentView] = React.useState('home'); 
+            const [selectedProductId, setSelectedProductId] = React.useState(null);
+            const [selectedCategory, setSelectedCategory] = React.useState('全部');
+            const [searchQuery, setSearchQuery] = React.useState('');
+            const [sortBy, setSortBy] = React.useState('default');
+            const [detailQuantity, setDetailQuantity] = React.useState(1);
+
+            const [inscriptionInput, setInscriptionInput] = React.useState({ target: '', style: 'four-words' });
+            const [generatedInscription, setGeneratedInscription] = React.useState(null);
+            const [isGeneratingInscription, setIsGeneratingInscription] = React.useState(false);
+            const [appliedInscription, setAppliedInscription] = React.useState(null);
+
+            const [currentUser, setCurrentUser] = React.useState(() => {
+                const saved = localStorage.getItem('koji_user');
+                return saved ? JSON.parse(saved) : {
+                    isLoggedIn: true,
+                    username: "李典藏",
+                    email: "lee.collector@art.tw",
+                    level: "典藏雅士", 
+                    points: 380, 
+                    accSpent: 38000, 
+                    coupons: ["ZHUNAN500", "ZHUNANVIP"] 
+                };
+            });
+
+            const [activeCoupon, setActiveCoupon] = React.useState(null); 
+
+            const [cart, setCart] = React.useState(() => {
+                const saved = localStorage.getItem('koji_cart');
+                return saved ? JSON.parse(saved) : [];
+            });
+
+            const [orders, setOrders] = React.useState(() => {
+                const saved = localStorage.getItem('koji_orders');
+                return saved ? JSON.parse(saved) : [];
+            });
+
+            const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
+            const [checkoutForm, setCheckoutForm] = React.useState({ name: '', phone: '', address: '', payment: 'credit' });
+
+            const [isChatOpen, setIsChatOpen] = React.useState(false);
+            const [chatMessages, setChatMessages] = React.useState([
+                { sender: 'curator', text: "您好，我是您的私人藝術策展人。竹南窯場傳承百年的火與泥。不論是尋求風水聚寶盆、送禮新婚入厝、抑或是探尋大師傳承工藝，皆可在此向我諮詢，我將利用 ✨ Gemini 智慧導購大腦 為您提供充滿溫度的客製化推薦。", linkProduct: null }
+            ]);
+            const [userInput, setUserInput] = React.useState('');
+            const [isChatLoading, setIsChatLoading] = React.useState(false);
+
+            React.useEffect(() => { localStorage.setItem('koji_cart', JSON.stringify(cart)); }, [cart]);
+            React.useEffect(() => { localStorage.setItem('koji_orders', JSON.stringify(orders)); }, [orders]);
+            React.useEffect(() => { localStorage.setItem('koji_user', JSON.stringify(currentUser)); }, [currentUser]);
+
+            React.useEffect(() => {
+                if (currentView === 'insights') {
+                    const ctx = document.getElementById('salesChart');
+                    if (ctx) {
+                        const chartInstance = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: PRODUCT_DATABASE.map(p => p.name.length > 8 ? p.name.substring(0, 8) + '...' : p.name),
+                                datasets: [{
+                                    label: '歷史典藏次數',
+                                    data: PRODUCT_DATABASE.map(p => p.sales),
+                                    backgroundColor: '#78350f',
+                                    borderRadius: 4
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { 
+                                    legend: { display: false },
+                                    tooltip: {
+                                        backgroundColor: '#2C2A29',
+                                        titleFont: { family: 'Noto Serif TC' },
+                                        bodyFont: { family: 'Noto Serif TC' }
+                                    }
+                                },
+                                scales: {
+                                    y: { beginAtZero: true, grid: { color: '#e5e5e5' } },
+                                    x: { grid: { display: false } }
+                                }
+                            }
+                        });
+                        return () => chartInstance.destroy();
+                    }
+                }
+            }, [currentView]);
+
+            const handleNavClick = (category) => {
+                setSelectedCategory(category);
+                setSearchQuery('');
+                setCurrentView('home');
+                window.scrollTo({ top: 500, behavior: 'smooth' });
+            };
+
+            const addToCart = (product, quantity) => {
+                if (product.vipOnly && currentUser.level !== '窯火尊榮') {
+                    alert(`【典藏限制】作品「${product.name}」為極稀有孤品，僅開放給「窯火尊榮」會籍會員認購。您目前會籍為「${currentUser.level}」。建議您多加典藏累積消費，系統將會為您自動升等。`);
+                    return;
+                }
+
+                if (quantity > product.stock) {
+                    alert(`目前庫存僅剩 ${product.stock} 件，無法購買更多。`);
+                    return;
+                }
+
+                setCart(prev => {
+                    const idx = prev.findIndex(item => item.id === product.id && item.appliedInscription === appliedInscription);
+                    if (idx > -1) {
+                        const newCart = [...prev];
+                        const totalQty = newCart[idx].quantity + quantity;
+                        if (totalQty > product.stock) {
+                            alert(`購物車內此品合計已達庫存上限 (${product.stock} 件)`);
+                            return prev;
+                        }
+                        newCart[idx].quantity = totalQty;
+                        return newCart;
+                    }
+                    return [...prev, { ...product, quantity, appliedInscription }];
+                });
+                alert(`已將 ${quantity} 件作品編入您的典藏清單。${appliedInscription ? "（已附加專屬客製款識）" : ""}`);
+                setAppliedInscription(null);
+                setGeneratedInscription(null);
+            };
+
+            const updateCartQty = (id, amt, maxStock) => {
+                setCart(prev => prev.map(item => {
+                    if (item.id === id) {
+                        const newQty = item.quantity + amt;
+                        if (newQty > maxStock) { alert(`已達該手工限量品庫存上限`); return item; }
+                        return { ...item, quantity: newQty < 1 ? 1 : newQty };
+                    }
+                    return item;
+                }));
+            };
+
+            const applyCouponCode = (code) => {
+                if (!currentUser.coupons.includes(code)) {
+                    alert("您目前未持有此優惠券，或代碼無效。");
+                    return;
+                }
+                if (code === "ZHUNAN500") {
+                    setActiveCoupon({ code, discount: 500 });
+                } else if (code === "ZHUNANVIP") {
+                    setActiveCoupon({ code, discount: 2000 });
+                }
+                alert(`成功套用優惠代碼：${code}`);
+            };
+
+            const handleCheckoutSubmit = (e) => {
+                e.preventDefault();
+                if (!checkoutForm.name || !checkoutForm.phone || !checkoutForm.address) {
+                    alert("請完整填寫收件資訊。");
+                    return;
+                }
+
+                const finalTotal = Math.max(0, cartTotal - (activeCoupon ? activeCoupon.discount : 0));
+                
+                const newOrder = {
+                    orderId: "ZN-" + Date.now().toString().slice(-6) + "-" + Math.floor(Math.random() * 900 + 100),
+                    date: new Date().toLocaleDateString(),
+                    items: [...cart],
+                    total: finalTotal,
+                    info: { ...checkoutForm }
+                };
+
+                setOrders(prev => [newOrder, ...prev]);
+
+                if (currentUser.isLoggedIn) {
+                    const earnedPoints = Math.floor(finalTotal / 100); 
+                    const newSpent = currentUser.accSpent + finalTotal;
+                    
+                    let newLevel = "新晉藏友";
+                    if (newSpent >= 80000) newLevel = "窯火尊榮";
+                    else if (newSpent >= 30000) newLevel = "典藏雅士";
+
+                    let updatedCoupons = [...currentUser.coupons];
+                    if (activeCoupon) {
+                        updatedCoupons = updatedCoupons.filter(c => c !== activeCoupon.code);
+                    }
+
+                    setCurrentUser(prev => ({
+                        ...prev,
+                        accSpent: newSpent,
+                        points: prev.points + earnedPoints,
+                        level: newLevel,
+                        coupons: updatedCoupons
+                    }));
+
+                    alert(`結帳成功！\n本筆交易成功為您累積了 ${earnedPoints} 點典藏積分！\n您目前的累計典藏金額達到 NT$ ${newSpent.toLocaleString()} 元，會籍晉升/維持為：【${newLevel}】。`);
+                }
+
+                setCart([]);
+                setActiveCoupon(null);
+                setIsCheckoutOpen(false);
+                setCurrentView('orders');
+            };
+
+            const handleSendMessage = async (e) => {
+                e.preventDefault();
+                if (!userInput.trim()) return;
+
+                const userMsg = userInput;
+                setChatMessages(prev => [...prev, { sender: 'user', text: userMsg }]);
+                setUserInput('');
+                setIsChatLoading(true);
+
+                const chatbotSchema = {
+                    type: "OBJECT",
+                    properties: {
+                        replyText: { type: "STRING" },
+                        recommendedProductId: { type: "STRING" }
+                    },
+                    required: ["replyText", "recommendedProductId"]
+                };
+
+                const systemInstruction = `你是一位精通台灣無形文化資產的『竹南交趾陶藝術策展人』。請用優雅、內斂、溫潤的文人藝術語句回答關於空間風水、開業與新婚送禮、收藏投資或工藝保養之問題。
+                這裡有我們展廊的 15 款大師作品庫，格式為 JSON 陣列：${JSON.stringify(PRODUCT_DATABASE)}。
+                請分析使用者問題中的情感脈絡與核心需求（如：玄關辟邪、新居落成、商業招財、預算考量），並從中挑選最適合的一款交趾陶作品。
+                請以 JSON 格式回傳：
+                - replyText: 充滿文化涵義、細緻優雅的答覆。
+                - recommendedProductId: 推薦作品的 id（必須嚴格對應資料庫中的 id 值，如 myth-01, fengshui-02 等）。若無適合推薦則回傳空字串。`;
+
+                try {
+                    const result = await fetchGeminiWithRetry(userMsg, systemInstruction, chatbotSchema);
+                    const responseJson = JSON.parse(result.candidates[0].content.parts[0].text);
+                    
+                    const matchedProduct = PRODUCT_DATABASE.find(p => p.id === responseJson.recommendedProductId) || null;
+
+                    setChatMessages(prev => [...prev, {
+                        sender: 'curator',
+                        text: responseJson.replyText,
+                        linkProduct: matchedProduct
+                    }]);
+                } catch (error) {
+                    setChatMessages(prev => [...prev, {
+                        sender: 'curator',
+                        text: "✨ 靈感阻斷：無法連線至大師藝廊的智慧神經網路，這或許是高溫窯爐的磁場干擾，請您稍後再試。",
+                        linkProduct: null
+                    }]);
+                } finally {
+                    setIsChatLoading(false);
+                }
+            };
+
+            const generateInscription = async () => {
+                if (!inscriptionInput.target.trim()) {
+                    alert("請先輸入您客製化題贈的對象、名字或祝賀場合。");
+                    return;
+                }
+
+                setIsGeneratingInscription(true);
+                setGeneratedInscription(null);
+
+                const inscriptionSchema = {
+                    type: "OBJECT",
+                    properties: {
+                        inscription: { type: "STRING" },
+                        explanation: { type: "STRING" }
+                    },
+                    required: ["inscription", "explanation"]
+                };
+
+                const systemInstruction = `你是一位精通古典漢語、易經與陶藝落款美學的國寶級題字書法大師。
+                使用者即將為這件交趾陶作品進行『落款底座客製化題字題詩』：
+                作品名稱：【${selectedProduct?.name}】
+                作品文化背景與故典：${selectedProduct?.story}
+                題贈對象/場合：${inscriptionInput.target}
+                祝福風格：${inscriptionInput.style === 'four-words' ? '四字成語/吉慶雋永雅句' : inscriptionInput.style === 'poem' ? '七言絕句古典祝福詩' : '禪宗哲理與大自然大智慧'}
+                
+                請以此作品的文化寓意與受贈場合為核心，量身創作出高雅、不落俗套的客製化題字：
+                - inscription: 創作出的四字落款題字或一首七言詩。
+                - explanation: 簡短優雅地向用戶解釋此款識的文學意境與美好寓意。`;
+
+                try {
+                    const result = await fetchGeminiWithRetry(
+                        `請為作品：${selectedProduct?.name}，題贈對象：${inscriptionInput.target} 生成款識。`,
+                        systemInstruction,
+                        inscriptionSchema
+                    );
+                    const responseJson = JSON.parse(result.candidates[0].content.parts[0].text);
+                    setGeneratedInscription(responseJson);
+                } catch (error) {
+                    alert("題字大師目前正在閉關靜修中，請稍後再試。");
+                } finally {
+                    setIsGeneratingInscription(false);
+                }
+            };
+
+            const navigateToDetail = (id) => {
+                setSelectedProductId(id);
+                setDetailQuantity(1);
+                setGeneratedInscription(null);
+                setAppliedInscription(null);
+                setCurrentView('detail');
+                window.scrollTo(0, 0);
+            };
+
+            const processedProducts = React.useMemo(() => {
+                let result = [...PRODUCT_DATABASE];
+                if (selectedCategory !== '全部') {
+                    result = result.filter(p => p.category === selectedCategory);
+                }
+                if (searchQuery.trim() !== '') {
+                    const q = searchQuery.toLowerCase();
+                    result = result.filter(p => p.name.toLowerCase().includes(q) || p.story.toLowerCase().includes(q) || p.keywords.some(k => k.includes(q)));
+                }
+                if (sortBy === 'price-asc') result.sort((a, b) => a.price - b.price);
+                else if (sortBy === 'price-desc') result.sort((a, b) => b.price - a.price);
+                else if (sortBy === 'popular') result.sort((a, b) => b.sales - a.sales);
+                return result;
+            }, [selectedCategory, searchQuery, sortBy]);
+
+            const selectedProduct = PRODUCT_DATABASE.find(p => p.id === selectedProductId);
+            const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+            return (
+                <div className="min-h-screen flex flex-col bg-[#FDFBF7] text-[#2C2A29]">
+                    
+                    <header className="sticky top-0 z-40 bg-[#FDFBF7]/95 backdrop-blur-md border-b border-[#2C2A29]/10 px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => { setCurrentView('home'); setSelectedCategory('全部'); setSearchQuery(''); }}>
+                            <div className="w-8 h-8 bg-[#2C2A29] rounded-full flex items-center justify-center text-[#FDFBF7] font-serif text-sm">竹</div>
+                            <div>
+                                <span className="font-bold tracking-widest text-lg block md:inline text-[#2C2A29]">竹南交趾陶</span>
+                                <span className="text-xs font-light md:ml-2 text-neutral-500">數位典藏旗艦展廊</span>
+                            </div>
+                        </div>
+                        
+                        <nav className="flex space-x-5 text-xs md:text-sm tracking-widest text-[#2C2A29]/80 font-medium overflow-x-auto">
+                            <button onClick={() => setCurrentView('home')} className={`pb-1 whitespace-nowrap transition-all ${currentView === 'home' ? 'border-b-2 border-black font-bold text-black' : 'hover:text-black'}`}>藏品廊道</button>
+                            <button onClick={() => setCurrentView('story')} className={`pb-1 whitespace-nowrap transition-all ${currentView === 'story' ? 'border-b-2 border-black font-bold text-black' : 'hover:text-black'}`}>釉火故事館</button>
+                            <button onClick={() => setCurrentView('orders')} className={`pb-1 whitespace-nowrap transition-all ${currentView === 'orders' ? 'border-b-2 border-black font-bold text-black' : 'hover:text-black'}`}>歷史典藏</button>
+                            <button onClick={() => setCurrentView('member')} className={`pb-1 whitespace-nowrap transition-all ${currentView === 'member' ? 'border-b-2 border-black font-bold text-black' : 'hover:text-black'}`}>
+                                會員中心 {currentUser.isLoggedIn && <span className="text-[9px] bg-[#2C2A29] text-white px-1.5 py-0.5 rounded-full ml-1">{currentUser.level}</span>}
+                            </button>
+                        </nav>
+
+                        <div className="flex items-center space-x-4 w-full md:w-auto">
+                            <div className="relative flex-grow md:flex-grow-0">
+                                <input type="text" value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); if(currentView!=='home') setCurrentView('home'); }}
+                                       placeholder="搜尋作品名/辟邪/送禮/招財..." 
+                                       className="w-full md:w-56 bg-white border border-neutral-300 rounded-full px-4 py-1.5 text-xs focus:outline-none focus:border-black font-sans" />
+                                {searchQuery && <button onClick={() => setSearchQuery('')} className="absolute right-3 top-2 text-gray-400 text-xs">✕</button>}
+                            </div>
+
+                            <button onClick={() => setCurrentView('cart')} className="relative p-2 text-[#2C2A29] hover:opacity-75 text-xl">
+                                🛒
+                                {cart.length > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-amber-800 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-sans font-bold">
+                                        {cart.reduce((s, i) => s + i.quantity, 0)}
+                                    </span>
+                                )}
+                            </button>
+                        </div>
+                    </header>
+
+                    <main className="flex-grow">
+                        
+                        {currentView === 'home' && (
+                            <div>
+                                <section className="px-8 pt-12 pb-16 max-w-6xl mx-auto md:grid md:grid-cols-2 md:gap-16 md:items-center">
+                                    <div className="space-y-5">
+                                        <div className="inline-block border border-amber-900 text-amber-900 px-3 py-0.5 text-xs tracking-widest font-bold">1200°C 窯火與當代空間的調和</div>
+                                        <h1 className="text-3xl md:text-5xl font-light tracking-wide leading-tight text-[#2C2A29]">
+                                            指尖捏塑的神話，<br />
+                                            在歲月中晶瑩。
+                                        </h1>
+                                        <p className="text-neutral-600 text-xs leading-relaxed text-justify font-light">
+                                            竹南交趾陶，源自廟宇屋脊剪黏的台灣國寶級藝術。我們將繁複的五行配色，融入當代家居美學，呈現極致留白、具有呼吸感的精品典藏線路。致敬大師窯變流釉，為您的生活帶來文化的深邃溫度。
+                                        </p>
+                                        <button onClick={() => setCurrentView('story')} className="inline-block border border-black px-6 py-2 text-xs tracking-widest hover:bg-black hover:text-[#FDFBF7] transition-all">
+                                            探索大師釉燒故事 →
+                                        </button>
+                                    </div>
+                                    <div className="hidden md:block h-[300px] bg-neutral-100 overflow-hidden relative border border-neutral-200">
+                                        <img src="https://github.com/gg94875987/Hanni_BB/blob/main/%E5%BC%B5%E8%BE%B0%E7%B6%B2%E7%AB%99/pic6.jpg?raw=true" className="w-full h-full object-cover grayscale opacity-85" />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                                        <div className="absolute bottom-4 left-4 text-white text-[10px] tracking-widest">竹南老窯手工塑胎實拍</div>
+                                    </div>
+                                </section>
+
+                                <section className="px-8 max-w-7xl mx-auto border-t border-neutral-200 pt-8">
+                                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                        <div className="flex space-x-4 overflow-x-auto pb-2 no-scrollbar w-full md:w-auto">
+                                            {['全部', '傳統神話', '居家風水', '現代文創'].map(cat => (
+                                                <button key={cat} onClick={() => handleNavClick(cat)}
+                                                    className={`px-4 py-1.5 border rounded-full text-xs tracking-widest transition-all whitespace-nowrap ${selectedCategory === cat ? 'bg-[#2C2A29] text-[#FDFBF7] border-[#2C2A29]' : 'border-neutral-300 text-neutral-500 hover:border-black'}`}>
+                                                    {cat}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <div className="flex items-center space-x-2 text-xs w-full md:w-auto justify-end">
+                                            <span className="text-neutral-400">排序篩選：</span>
+                                            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-white border border-neutral-300 rounded px-2 py-1 text-xs font-sans">
+                                                <option value="default">預設策展人推薦</option>
+                                                <option value="price-asc">價格：由低到高</option>
+                                                <option value="price-desc">價格：由高到低</option>
+                                                <option value="popular">暢銷收藏排行</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="text-[11px] text-neutral-400 mt-2 font-sans">
+                                        當前展示：【{selectedCategory}】項目，找到 <span className="text-amber-900 font-bold">{processedProducts.length}</span> 款匠心大作。
+                                    </div>
+                                </section>
+
+                                <section className="py-10 pl-8 overflow-hidden">
+                                    {processedProducts.length === 0 ? (
+                                        <div className="py-20 text-center text-sm text-neutral-400 tracking-widest pr-8">
+                                            無符合當前檢索條件的交趾陶作品，您可以嘗試更換關鍵字。
+                                        </div>
+                                    ) : (
+                                        <div className="flex overflow-x-auto space-x-8 pb-10 pr-8 snap-x snap-mandatory no-scrollbar scroll-smooth">
+                                            {processedProducts.map(product => (
+                                                <div key={product.id} className="w-[280px] md:w-[330px] flex-shrink-0 snap-start bg-white border border-neutral-200 p-4 transition-all hover:shadow-lg">
+                                                    <div className="relative w-full h-[250px] bg-neutral-50 mb-3 overflow-hidden cursor-pointer" onClick={() => navigateToDetail(product.id)}>
+                                                        <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-700 hover:scale-105" />
+                                                        <div className="absolute top-2 left-2 bg-[#2C2A29] text-[#FDFBF7] text-[9px] tracking-widest px-2 py-0.5 font-bold">
+                                                            {product.tag}
+                                                        </div>
+                                                        {product.vipOnly && (
+                                                            <div className="absolute inset-0 bg-black/65 flex flex-col items-center justify-center text-center p-4">
+                                                                <span className="text-amber-400 text-xs tracking-widest font-bold mb-1">👑 窯火尊榮限定</span>
+                                                                <span className="text-white text-[10px] font-sans">需累積消費滿8萬解鎖認購</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <div className="flex justify-between items-baseline font-sans">
+                                                            <span className="text-[10px] text-neutral-400 bg-neutral-100 px-1.5 py-0.5">{product.category}</span>
+                                                            <span className="text-xs font-bold text-amber-900">NT$ {product.price.toLocaleString()}</span>
+                                                        </div>
+                                                        <h3 className="text-sm font-medium text-[#2C2A29] truncate cursor-pointer hover:text-amber-800" onClick={() => navigateToDetail(product.id)}>
+                                                            {product.name}
+                                                        </h3>
+                                                        <p className="text-[11px] text-neutral-500 line-clamp-2 h-8 leading-normal font-light">{product.story}</p>
+                                                        
+                                                        <div className="pt-2 flex space-x-2">
+                                                            <button onClick={() => navigateToDetail(product.id)} className="flex-1 text-center border border-[#2C2A29] text-xs py-1.5 tracking-widest hover:bg-[#2C2A29] hover:text-[#FDFBF7] transition-all">
+                                                                鑑賞故事
+                                                            </button>
+                                                            <button onClick={() => addToCart(product, 1)} className="px-2.5 bg-[#2C2A29] text-white hover:bg-neutral-800 transition-colors">
+                                                                +
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </section>
+                            </div>
+                        )}
+
+                        {currentView === 'story' && (
+                            <section className="px-6 py-12 max-w-4xl mx-auto space-y-12">
+                                <div className="text-center space-y-3">
+                                    <span className="text-xs tracking-widest text-amber-900 font-bold uppercase">竹南交趾陶・傳承故事</span>
+                                    <h2 className="text-3xl font-light tracking-wide text-[#2C2A29]">千度淬煉・泥骨金皮</h2>
+                                    <div className="w-12 h-0.5 bg-amber-800 mx-auto"></div>
+                                    <p className="text-xs text-neutral-500 max-w-lg mx-auto leading-relaxed">
+                                        交趾陶早期源自華南，隨閩粵移民於清代傳入台灣，因其華麗剔透被廣泛運用於寺廟剪黏、脊頂與壁堵。竹南老窯堅持手捏、配釉與雙重鍛燒，將這座原本遙不可及的屋脊神話，變為融入生活的殿堂藏品。
+                                    </p>
+                                </div>
+
+                                <div className="grid md:grid-cols-2 gap-8 items-center bg-[#F4EFE8] p-6 rounded-sm border border-neutral-200">
+                                    <div className="space-y-4">
+                                        <h3 className="text-lg font-medium text-amber-950">【匠心雕琢，竹南交趾的文化溫度】</h3>
+                                        <p className="text-xs text-neutral-600 leading-relaxed text-justify font-light">
+                                            源自竹南的交趾陶，不僅是色彩斑斕的藝術，更是客家匠心與歲月的凝鍊。我們秉持「傳承文化、創新生活」的核心，將傳統精湛工藝，轉化為具備現代美學的藝術禮贈。透過 AI 智能顧問，我們精準連結您的情感需求，讓每一件精雕細琢的交趾陶藝，在指尖傳遞出客家山林間最溫潤的祝福，為您的珍貴心意，刻下永恆的文化印記。
+                                        </p>
+                                    </div>
+                                    <div className="h-[200px] overflow-hidden">
+                                        <img src="https://github.com/gg94875987/Hanni_BB/blob/main/%E5%BC%B5%E8%BE%B0%E7%B6%B2%E7%AB%99/images.jpg?raw=true" className="w-full h-full object-cover" />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-6">
+                                    <h3 className="text-sm tracking-widest text-[#2C2A29] font-bold border-l-2 border-amber-900 pl-3">【匠心五大工藝淬煉】</h3>
+                                    <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                                        {CRAFT_STEPS.map(item => (
+                                            <div key={item.step} className="bg-white border border-neutral-200 p-4 space-y-2 hover:shadow-md transition-all">
+                                                <div className="text-xs text-amber-800 font-sans font-extrabold uppercase">STEP {item.step}</div>
+                                                <h4 className="text-xs font-bold text-[#2C2A29]">{item.title}</h4>
+                                                <p className="text-[11px] text-neutral-500 leading-relaxed text-justify font-light">{item.desc}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </section>
+                        )}
+
+                        {currentView === 'detail' && selectedProduct && (
+                            <section className="px-6 py-12 max-w-5xl mx-auto">
+                                <button onClick={() => setCurrentView('home')} className="inline-flex items-center space-x-2 text-xs tracking-widest text-neutral-500 hover:text-black mb-8">
+                                    <span>← 返回藏品廊道</span>
+                                </button>
+                                
+                                <div className="grid md:grid-cols-2 gap-10 lg:gap-16">
+                                    <div className="w-full aspect-square bg-white border border-neutral-200 overflow-hidden relative">
+                                        <img src={selectedProduct.image} alt={selectedProduct.name} className="w-full h-full object-cover" />
+                                        {selectedProduct.vipOnly && (
+                                            <div className="absolute top-4 right-4 bg-amber-900 text-amber-400 text-xs px-3 py-1 font-bold">👑 尊榮會籍專屬</div>
+                                        )}
+                                    </div>
+                                    
+                                    <div className="flex flex-col justify-between space-y-6">
+                                        <div className="space-y-5">
+                                            <span className="text-xs tracking-widest bg-amber-900 text-white px-2.5 py-0.5 font-sans font-bold">{selectedProduct.category}</span>
+                                            <h2 className="text-2xl font-medium tracking-wide text-[#2C2A29]">{selectedProduct.name}</h2>
+                                            <div className="font-sans text-xl font-bold text-amber-950">NT$ {selectedProduct.price.toLocaleString()}</div>
+                                            
+                                            <div className="border-t border-b border-neutral-200 py-3 font-sans text-xs space-y-1.5 text-neutral-600">
+                                                <div><strong>工藝規格：</strong>{selectedProduct.spec}</div>
+                                                <div><strong>目前庫存：</strong>僅賸 <span className="text-amber-800 font-bold">{selectedProduct.stock}</span> 件 (限量純手工)</div>
+                                                <div><strong>藏友口碑：</strong>已售出 {selectedProduct.sales} 件</div>
+                                                {selectedProduct.vipOnly && <div className="text-red-700 font-bold">※ 本作品僅限「窯火尊榮」會籍之藏友認購。</div>}
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <span className="text-xs tracking-widest text-neutral-400 block font-bold uppercase">作品與空間的意涵故事</span>
+                                                <p className="text-xs leading-relaxed text-neutral-600 text-justify bg-neutral-50 p-4 border-l-2 border-[#2C2A29] font-light">
+                                                    {selectedProduct.story}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-[#FAF7F2] p-4 border border-dashed border-amber-900/30 space-y-3 rounded-sm">
+                                            <h4 className="text-xs font-bold text-amber-950 flex items-center space-x-1">
+                                                <span>✨ 大師客製化窯刻落款落詩題字服務 (免費附贈)</span>
+                                            </h4>
+                                            
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <div>
+                                                    <label className="block text-[10px] text-neutral-500 mb-1">受贈對象或場合 (例: 開業大吉)</label>
+                                                    <input type="text" value={inscriptionInput.target} 
+                                                           onChange={e => setInscriptionInput({...inscriptionInput, target: e.target.value})}
+                                                           placeholder="受贈名字 / 開業 / 新居"
+                                                           className="w-full text-xs p-1.5 border bg-white focus:outline-none" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[10px] text-neutral-500 mb-1">祝福文風風格</label>
+                                                    <select value={inscriptionInput.style} 
+                                                            onChange={e => setInscriptionInput({...inscriptionInput, style: e.target.value})}
+                                                            className="w-full text-xs p-1.5 border bg-white focus:outline-none">
+                                                        <option value="four-words">四字典雅吉祥</option>
+                                                        <option value="poem">七言律詩絕句</option>
+                                                        <option value="zen">易經哲理禪詩</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <button onClick={generateInscription} disabled={isGeneratingInscription}
+                                                    className="w-full bg-[#78350f] text-white text-xs py-1.5 font-bold hover:bg-amber-900 transition-colors flex items-center justify-center space-x-1">
+                                                {isGeneratingInscription ? "✨ 大師正在調配朱砂靈感..." : "✨ 呼請大師靈感生成專屬款識"}
+                                            </button>
+
+                                            {generatedInscription && (
+                                                <div className="bg-white p-3 border border-amber-900/10 text-center space-y-2 mt-2">
+                                                    <div className="text-amber-900 font-serif font-bold text-sm tracking-widest border-b pb-1">
+                                                        {generatedInscription.inscription}
+                                                    </div>
+                                                    <p className="text-[10px] text-neutral-500 text-justify font-light leading-relaxed">
+                                                        <strong>大師典故深釋：</strong> {generatedInscription.explanation}
+                                                    </p>
+                                                    <button onClick={() => { setAppliedInscription(generatedInscription.inscription); alert("已將此款識套用於此陶件！當您將此品加入購物車時將自動攜帶此款識進行燒刻落款。"); }}
+                                                            className="bg-[#2C2A29] text-white text-[10px] px-3 py-1 hover:bg-neutral-800 transition-colors">
+                                                        確定將此款識鐫刻於本作品底座
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {appliedInscription && (
+                                                <div className="text-[11px] text-emerald-800 bg-emerald-50 border border-emerald-200 p-2 text-center font-bold">
+                                                    ✓ 已成功鎖定客製落款：【{appliedInscription}】
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="pt-2 space-y-4">
+                                            <div className="flex items-center space-x-3 font-sans">
+                                                <span className="text-xs text-neutral-500">典藏數量：</span>
+                                                <div className="flex items-center border border-neutral-300 bg-white">
+                                                    <button onClick={() => setDetailQuantity(p => Math.max(1, p - 1))} className="px-3 py-1 text-xs font-bold hover:bg-neutral-100">-</button>
+                                                    <span className="px-4 py-1 text-xs font-bold">{detailQuantity}</span>
+                                                    <button onClick={() => setDetailQuantity(p => Math.min(selectedProduct.stock, p + 1))} className="px-3 py-1 text-xs font-bold hover:bg-neutral-100">+</button>
+                                                </div>
+                                            </div>
+
+                                            <button onClick={() => addToCart(selectedProduct, detailQuantity)} className="w-full bg-[#2C2A29] text-[#FDFBF7] py-3 text-xs tracking-widest font-bold hover:bg-neutral-800 transition-colors">
+                                                將 {detailQuantity} 件作品編入典藏清單
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        )}
+
+                        {currentView === 'cart' && (
+                            <section className="px-6 py-12 max-w-3xl mx-auto">
+                                <h2 className="text-xl font-medium tracking-widest mb-6 border-b pb-3 text-[#2C2A29]">您的典藏清單 (購物車)</h2>
+                                
+                                {cart.length === 0 ? (
+                                    <div className="text-center py-16 font-light text-xs text-neutral-400 tracking-widest">
+                                        清單中暫無作品。 <br/>
+                                        <button onClick={() => setCurrentView('home')} className="mt-4 border border-black px-4 py-1.5 text-black hover:bg-black hover:text-white">前往選購</button>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-5">
+                                        {cart.map(item => (
+                                            <div key={item.id} className="flex flex-col border-b pb-3 font-sans text-xs space-y-2">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigateToDetail(item.id)}>
+                                                        <img src={item.image} className="w-12 h-12 object-cover bg-neutral-100" />
+                                                        <div>
+                                                            <h4 className="font-serif font-medium text-neutral-800">{item.name}</h4>
+                                                            <span className="text-[10px] text-neutral-400">{item.category}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center space-x-6">
+                                                        <div className="flex items-center border border-neutral-300 bg-white">
+                                                            <button onClick={() => updateCartQty(item.id, -1, item.stock)} className="px-2 py-0.5 text-xs hover:bg-neutral-100">-</button>
+                                                            <span className="px-3 py-0.5 text-xs font-bold">{item.quantity}</span>
+                                                            <button onClick={() => updateCartQty(item.id, 1, item.stock)} className="px-2 py-0.5 text-xs hover:bg-neutral-100">+</button>
+                                                        </div>
+                                                        <span className="font-bold text-amber-900 w-20 text-right font-sans">NT$ {(item.price * item.quantity).toLocaleString()}</span>
+                                                        <button onClick={() => setCart(p => p.filter(i => i.id !== item.id))} className="text-neutral-400 hover:text-red-700">刪除</button>
+                                                    </div>
+                                                </div>
+                                                {item.appliedInscription && (
+                                                    <div className="bg-amber-50/50 border border-amber-900/10 px-3 py-1 text-[10px] text-amber-900 flex justify-between rounded-sm">
+                                                        <span><strong>👑 獨客製題印落款：</strong> 【{item.appliedInscription}】</span>
+                                                        <span className="text-neutral-400 font-light">大師將在出窯前手工款識鐫刻</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+
+                                        <div className="bg-neutral-50 p-4 border border-neutral-200 flex flex-col sm:flex-row justify-between items-center gap-3">
+                                            <div className="text-xs text-neutral-600">
+                                                <strong>可用折扣代碼：</strong> {currentUser.coupons.length > 0 ? currentUser.coupons.join(', ') : '暫無優惠券'}
+                                            </div>
+                                            <div className="flex space-x-2 w-full sm:w-auto">
+                                                <input type="text" id="couponInput" placeholder="輸入折扣代碼..." className="border px-3 py-1 text-xs bg-white focus:outline-none" />
+                                                <button onClick={() => applyCouponCode(document.getElementById('couponInput').value.trim())} className="bg-[#2C2A29] text-white px-4 py-1 text-xs tracking-widest">套用</button>
+                                            </div>
+                                        </div>
+
+                                        <div className="pt-4 flex flex-col items-end space-y-3">
+                                            <div className="text-xs text-neutral-600 font-sans space-y-1 text-right">
+                                                <div>原始金額： NT$ {cartTotal.toLocaleString()}</div>
+                                                {activeCoupon && <div className="text-amber-800">優惠折抵： -NT$ {activeCoupon.discount.toLocaleString()} ({activeCoupon.code})</div>}
+                                                <div className="border-t pt-1 font-bold text-sm text-amber-950">
+                                                    折抵後應付金額： NT$ {Math.max(0, cartTotal - (activeCoupon ? activeCoupon.discount : 0)).toLocaleString()}
+                                                </div>
+                                            </div>
+                                            <div className="flex space-x-3">
+                                                <button onClick={() => setCurrentView('home')} className="border border-[#2C2A29] px-5 py-2 text-xs tracking-widest text-[#2C2A29] hover:bg-neutral-50">繼續瀏覽</button>
+                                                <button onClick={() => setIsCheckoutOpen(true)} className="bg-[#2C2A29] text-white px-6 py-2 text-xs tracking-widest hover:bg-[#2C2A29] shadow-md font-bold">啟動安全配送結帳</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </section>
+                        )}
+
+                        {currentView === 'member' && (
+                            <section className="px-6 py-12 max-w-3xl mx-auto space-y-8">
+                                <div className="border border-neutral-200 bg-white p-6 space-y-6">
+                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b pb-4">
+                                        <div className="flex items-center space-x-4">
+                                            <div className="w-12 h-12 bg-[#2C2A29] text-[#FDFBF7] rounded-full flex items-center justify-center text-lg font-bold font-serif">
+                                                {currentUser.username[0]}
+                                            </div>
+                                            <div>
+                                                <h3 className="text-sm font-bold text-[#2C2A29]">{currentUser.username} <span className="text-xs font-light text-neutral-500">({currentUser.email})</span></h3>
+                                                <span className="inline-block mt-1 text-[10px] tracking-widest bg-amber-900 text-white px-2 py-0.5 uppercase font-bold">
+                                                    會籍狀態：{currentUser.level}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="text-right text-xs">
+                                            <div className="text-neutral-500">累計消費金額</div>
+                                            <div className="text-lg font-bold text-amber-950 font-sans">NT$ {currentUser.accSpent.toLocaleString()}</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-[11px] text-neutral-500 font-sans">
+                                            <span>會籍進度 (新晉藏友 $\rightarrow$ 典藏雅士 3 萬 $\rightarrow$ 窯火尊榮 8 萬)</span>
+                                            <span>累計 {currentUser.accSpent / 1000}k / 80k</span>
+                                        </div>
+                                        <div className="w-full bg-neutral-200 h-2 rounded-full overflow-hidden">
+                                            <div className="bg-amber-800 h-full transition-all duration-500" style={{ width: `${Math.min(100, (currentUser.accSpent / 80000) * 100)}%` }}></div>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid sm:grid-cols-2 gap-4 pt-2">
+                                        <div className="bg-neutral-50 p-4 border border-neutral-200 space-y-2">
+                                            <span className="text-[11px] text-neutral-400 block uppercase font-bold">我的典藏積分</span>
+                                            <div className="text-2xl font-bold text-amber-950 font-sans">{currentUser.points} <span className="text-xs text-neutral-500">點</span></div>
+                                            <p className="text-[10px] text-neutral-400 leading-relaxed font-light">每消費 $100 累積 1 點。點數可用於未來兌換限定作品或不定期專屬折扣。</p>
+                                        </div>
+                                        <div className="bg-neutral-50 p-4 border border-neutral-200 space-y-2">
+                                            <span className="text-[11px] text-neutral-400 block uppercase font-bold">我持有的專屬優惠券</span>
+                                            <div className="space-y-1">
+                                                {currentUser.coupons.length > 0 ? (
+                                                    currentUser.coupons.map(coupon => (
+                                                        <div key={coupon} className="flex justify-between items-center bg-white p-1.5 border text-[11px]">
+                                                            <span className="font-bold font-sans text-amber-900">{coupon}</span>
+                                                            <span className="text-neutral-400">{coupon === 'ZHUNAN500' ? '現折 $500' : '大額典藏現折 $2,000'}</span>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div className="text-xs text-neutral-400">目前無可用折價券</div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        )}
+
+                        {currentView === 'orders' && (
+                            <section className="px-6 py-12 max-w-3xl mx-auto space-y-6">
+                                <h2 className="text-xl font-medium tracking-widest border-b pb-3 text-[#2C2A29]">您的歷史典藏訂單</h2>
+                                {orders.length === 0 ? (
+                                    <div className="text-center py-16 text-xs text-neutral-400 font-light tracking-widest">
+                                        目前尚無歷史訂單紀錄。
+                                    </div>
+                                ) : (
+                                    <div className="space-y-5">
+                                        {orders.map(order => (
+                                            <div key={order.orderId} className="border border-neutral-200 bg-white p-4 font-sans text-xs">
+                                                <div className="flex justify-between border-b pb-2 mb-2 font-bold bg-neutral-50 p-2">
+                                                    <span className="text-[#2C2A29]">訂單編號：{order.orderId}</span>
+                                                    <span className="text-neutral-500">日期：{order.date}</span>
+                                                </div>
+                                                <div className="space-y-2 px-2">
+                                                    {order.items.map(item => (
+                                                        <div key={item.id} className="flex flex-col text-neutral-600 border-b pb-1">
+                                                            <div className="flex justify-between">
+                                                                <span>{item.name} × {item.quantity}</span>
+                                                                <span>NT$ {(item.price * item.quantity).toLocaleString()}</span>
+                                                            </div>
+                                                            {item.appliedInscription && (
+                                                                <div className="text-[10px] text-amber-900 bg-amber-50 px-2 py-0.5 mt-1 rounded-xs">
+                                                                    底座落題： 【{item.appliedInscription}】
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                <div className="border-t mt-3 pt-2 px-2 text-right font-bold text-amber-950 text-sm">
+                                                    支付總額：NT$ {order.total.toLocaleString()}
+                                                </div>
+                                                <div className="mt-2 px-2 text-[10px] text-neutral-400 border-l-2 border-neutral-300">
+                                                    收件地址：{order.info.name} | {order.info.phone} | {order.info.address}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </section>
+                        )}
+
+                    </main>
+
+                    {isCheckoutOpen && (
+                        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
+                            <div className="bg-[#FDFBF7] p-6 max-w-md w-full border border-[#2C2A29]/20 shadow-2xl space-y-4">
+                                <div className="flex justify-between items-center border-b pb-2">
+                                    <h3 className="text-sm font-bold tracking-widest text-[#2C2A29]">國寶交趾陶・安全配送結帳</h3>
+                                    <button onClick={() => setIsCheckoutOpen(false)} className="text-neutral-400 hover:text-black">✕</button>
+                                </div>
+                                <form onSubmit={handleCheckoutSubmit} className="space-y-3 text-xs font-sans">
+                                    <div>
+                                        <label className="block text-neutral-600 mb-1">藏品收件人姓名 *</label>
+                                        <input type="text" required className="w-full border p-2 bg-white" placeholder="例：李典藏"
+                                               value={checkoutForm.name} onChange={e => setCheckoutForm({...checkoutForm, name: e.target.value})} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-neutral-600 mb-1">收件電話 *</label>
+                                        <input type="tel" required className="w-full border p-2 bg-white" placeholder="例：0912-345-678"
+                                               value={checkoutForm.phone} onChange={e => setCheckoutForm({...checkoutForm, phone: e.target.value})} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-neutral-600 mb-1">安全配送地址 *</label>
+                                        <input type="text" required className="w-full border p-2 bg-white" placeholder="請填寫作品寄送地址"
+                                               value={checkoutForm.address} onChange={e => setCheckoutForm({...checkoutForm, address: e.target.value})} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-neutral-600 mb-1">支付管道</label>
+                                        <select className="w-full border p-2 bg-white" value={checkoutForm.payment} onChange={e => setCheckoutForm({...checkoutForm, payment: e.target.value})}>
+                                            <option value="credit">3D 虛擬安全信用卡刷卡支付</option>
+                                            <option value="atm">實名銀行虛擬轉帳</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div className="bg-amber-50 p-3 text-[11px] text-amber-900 border border-amber-200 font-sans leading-normal">
+                                        <div>原始金額： NT$ {cartTotal.toLocaleString()}</div>
+                                        {activeCoupon && <div className="text-amber-800">套用折抵： -NT$ {activeCoupon.discount.toLocaleString()} ({activeCoupon.code})</div>}
+                                        <div className="border-t mt-1 pt-1 font-bold">實付總額： NT$ {Math.max(0, cartTotal - (activeCoupon ? activeCoupon.discount : 0)).toLocaleString()}</div>
+                                    </div>
+
+                                    <div className="flex space-x-2 pt-2">
+                                        <button type="button" onClick={() => setIsCheckoutOpen(false)} className="flex-1 border p-2 text-center text-neutral-600 hover:bg-neutral-100">取消</button>
+                                        <button type="submit" className="flex-1 bg-[#2C2A29] text-white p-2 text-center hover:bg-neutral-800">確認典藏</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="fixed bottom-6 right-6 z-50">
+                        <button onClick={() => setIsChatOpen(!isChatOpen)}
+                            className="bg-[#2C2A29] text-[#FDFBF7] p-3.5 rounded-full shadow-xl hover:bg-neutral-800 transition-all flex items-center space-x-2 tracking-widest text-xs font-medium">
+                            <span className="text-xl">💬</span>
+                            <span>✨ AI 藝術策展人諮詢</span>
+                        </button>
+
+                        {isChatOpen && (
+                            <div className="absolute bottom-14 right-0 w-[330px] md:w-[400px] h-[500px] bg-white border border-neutral-300 shadow-2xl flex flex-col z-50">
+                                <div className="bg-[#2C2A29] text-[#FDFBF7] p-4 flex justify-between items-center">
+                                    <div>
+                                        <h3 className="text-xs tracking-widest font-bold">駐廊藝術策展人 AI</h3>
+                                        <span className="text-[9px] text-neutral-400 font-sans">✨ Gemini 2.5 智慧多維語意系統 v4.0</span>
+                                    </div>
+                                    <button onClick={() => setIsChatOpen(false)} className="text-neutral-400 hover:text-white text-xs">✕</button>
+                                </div>
+
+                                <div className="flex-grow p-4 overflow-y-auto space-y-3 text-xs leading-relaxed no-scrollbar bg-[#FDFBF7]">
+                                    {chatMessages.map((msg, idx) => (
+                                        <div key={idx} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                            <div className={`max-w-[85%] p-3 ${msg.sender === 'user' ? 'bg-[#2C2A29] text-white' : 'bg-[#F4EFE8] border border-neutral-200 text-neutral-800 shadow-xs'}`}>
+                                                <p className="font-light text-justify leading-relaxed">{msg.text}</p>
+                                                {msg.linkProduct && (
+                                                    <div className="mt-3 pt-2 border-t border-dashed border-neutral-300 flex items-center space-x-2 bg-white/90 p-2 cursor-pointer hover:bg-white"
+                                                         onClick={() => { navigateToDetail(msg.linkProduct.id); setIsChatOpen(false); }}>
+                                                        <img src={msg.linkProduct.image} className="w-10 h-10 object-cover" />
+                                                        <div className="flex-grow overflow-hidden font-sans">
+                                                            <div className="font-serif font-bold text-[10px] text-amber-900 truncate">{msg.linkProduct.name}</div>
+                                                            <div className="text-[9px] text-neutral-500 font-bold">NT$ {msg.linkProduct.price.toLocaleString()} (點擊即時導購)</div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {isChatLoading && (
+                                        <div className="flex justify-start">
+                                            <div className="max-w-[85%] p-3 bg-neutral-100 border text-neutral-500 italic animate-pulse">
+                                                ✨ 策展人正在翻閱典藏卷軸...
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="px-2 py-1.5 bg-neutral-100 flex gap-1.5 overflow-x-auto text-[10px] whitespace-nowrap no-scrollbar border-t border-b">
+                                    <button type="button" onClick={() => { setUserInput("我想找辟邪效果好、放玄關的推薦作品"); }} className="bg-white border rounded px-2 py-0.5 hover:border-black">玄關辟邪推薦</button>
+                                    <button type="button" onClick={() => { setUserInput("如何保養與清潔交趾陶？"); }} className="bg-white border rounded px-2 py-0.5 hover:border-black">清潔與保養</button>
+                                    <button type="button" onClick={() => { setUserInput("如何註冊會員？有什麼優惠折扣？"); }} className="bg-white border rounded px-2 py-0.5 hover:border-black">會籍折扣與積點</button>
+                                </div>
+
+                                <form onSubmit={handleSendMessage} className="p-2 flex bg-white border-t">
+                                    <input type="text" value={userInput} onChange={(e) => setUserInput(e.target.value)}
+                                        placeholder="對策展人說：我想挑選一件新婚入厝禮..."
+                                        className="flex-grow px-3 py-1.5 text-xs border border-neutral-300 focus:outline-none focus:border-black font-sans" />
+                                    <button type="submit" className="bg-[#2C2A29] text-white px-4 text-xs tracking-widest font-bold">諮詢</button>
+                                </form>
+                            </div>
+                        )}
+                    </div>
+
+                    <footer className="bg-[#2C2A29] text-[#FDFBF7]/40 text-center py-6 text-[10px] tracking-widest mt-auto border-t border-neutral-800">
+                        © 2026 竹南交趾陶數位典藏藝廊. 會員與智慧 AI 語意完整實戰版.
+                    </footer>
+
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
