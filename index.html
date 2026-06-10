@@ -2,16 +2,17 @@
 <html lang="zh-TW">
 <head>
     <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-D0ZEPZWEZW"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-Q3JHJHJ5PP"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-  gtag('config', 'G-D0ZEPZWEZW');
+
+  gtag('config', 'G-Q3JHJHJ5PP');
 </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>竹南交趾陶・數位典藏藝廊</title>
+    <title>竹南交趾陶・數位藝廊</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
@@ -314,34 +315,6 @@
                         recommendedProductId: { type: "STRING" }
                     },
                     required: ["replyText", "recommendedProductId"]
-               const getCuratorResponse = (userInput) => {
-    const input = userInput.toLowerCase();
-
-    // 1. 溫暖的開場與引導
-    if (input.includes('你好') || input.includes('嗨') || input.includes('在嗎')) {
-        return "您好呀，我是您的竹南交趾陶策展人。很高興能在這裡與您分享這份傳統工藝的美好。請問今天是有什麼特別的機緣，讓您想尋找一件能溫暖空間的作品呢？";
-    }
-
-    // 2. 基於意象的推薦邏輯 (RAG 情境模擬)
-    if (input.includes('松') || input.includes('竹') || input.includes('梅')) {
-        return "「歲寒三友」總是帶給人一股靜謐的氣息。這類作品非常適合擺在書房或案頭，時時提醒我們內心的堅持。我為您挑選了幾件質感極佳的相關作品，或許您會喜歡：[查看歲寒三友系列連結]";
-    }
-    
-    if (input.includes('入厝') || input.includes('禮物') || input.includes('送禮')) {
-        return "這是一份很棒的心意。交趾陶作品兼具文化深度與祝福寓意，作為入厝禮非常莊重且獨特。不知您想挑選的是比較大氣、能成為客廳焦點的作品，還是精緻典雅、適合點綴玄關的呢？";
-    }
-
-    if (input.includes('故事') || input.includes('文化') || input.includes('傳說')) {
-        return "我很喜歡聊這些故事。交趾陶每一抹釉色下都藏著一段民間傳奇，這是它最動人的靈魂。您是對哪種類型的故事感興趣呢？像是祈福納財，還是關於歷史人物的傳奇？";
-    }
-
-    // 3. 通俗的未匹配回應 (保持禮貌與彈性)
-    return "您的品味真特別，這個需求很有趣。能不能再多跟我描述一點點，例如您希望這件作品為您的空間帶來什麼樣的氛圍？我好幫您精準地從庫存中找出最對味的那一件。";
-};
-
-// 在你的 React handleSendMessage 內調用：
-// const aiResponse = getCuratorResponse(userInput);
-// setMessages(prev => [...prev, { sender: 'bot', text: aiResponse }]);     
                 };
 
                 const systemInstruction = `你是一位精通台灣無形文化資產的『竹南交趾陶藝術策展人』。請用平易近人的語句回答關於空間風水、開業與新婚送禮、收藏投資或工藝保養之問題。
@@ -953,7 +926,7 @@
                             <div className="absolute bottom-14 right-0 w-[330px] md:w-[400px] h-[500px] bg-white border border-neutral-300 shadow-2xl flex flex-col z-50">
                                 <div className="bg-[#2C2A29] text-[#FDFBF7] p-4 flex justify-between items-center">
                                     <div>
-                                        <h3 className="text-xs tracking-widest font-bold">駐廊藝術策展人 AI</h3>
+                                        <h3 className="text-xs tracking-widest font-bold">AI客服 BB</h3>
                                         <span className="text-[9px] text-neutral-400 font-sans">✨ Gemini 2.5 智慧多維語意系統 v4.0</span>
                                     </div>
                                     <button onClick={() => setIsChatOpen(false)} className="text-neutral-400 hover:text-white text-xs">✕</button>
