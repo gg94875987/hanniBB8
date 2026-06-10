@@ -299,52 +299,59 @@
                 setCurrentView('orders');
             };
 
-            const handleSendMessage = async (e) => {
-                e.preventDefault();
-                if (!userInput.trim()) return;
+           const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!userInput.trim()) return;
 
-                const userMsg = userInput;
-                setChatMessages(prev => [...prev, { sender: 'user', text: userMsg }]);
-                setUserInput('');
-                setIsChatLoading(true);
+    const userMsg = userInput;
+    setChatMessages(prev => [...prev, { sender: 'user', text: userMsg }]);
+    setUserInput('');
+    setIsChatLoading(true);
 
-                const chatbotSchema = {
-                    type: "OBJECT",
-                    properties: {
-                        replyText: { type: "STRING" },
-                        recommendedProductId: { type: "STRING" }
-                    },
-                    required: ["replyText", "recommendedProductId"]
-                };
+    // 1. 簡化給 AI 的產品列表，減少 Input Token 消耗
+    const productSummary = PRODUCT_DATABASE.map(p => ({ id: p.id, name: p.name, category: p.category }));
 
-                const systemInstruction = `你是一位精通台灣無形文化資產的『竹南交趾陶藝術策展人』。請用平易近人的語句回答關於空間風水、開業與新婚送禮、收藏投資或工藝保養之問題。
-                這裡有我們展廊的 15 款大師作品庫，格式為 JSON 陣列：${JSON.stringify(PRODUCT_DATABASE)}。
-                請分析使用者問題中的對話脈絡與核心需求（如：玄關辟邪、新居落成、商業招財、預算考量），並從中挑選最適合使用者的一款交趾陶作品。
-                請以 JSON 格式回傳：
-                - replyText: 平易近人的答覆。
-                - recommendedProductId: 推薦作品的 id（必須嚴格對應資料庫中的 id 值，如 myth-01, fengshui-02 等）。若無適合推薦則回傳空字串。`;
+    const systemInstruction = `
+        你是一位精通台灣無形文化資產的『竹南交趾陶藝術策展人』。
+        請根據使用者的需求推薦作品。請從以下產品清單中挑選最適合的 ID：
+        ${JSON.stringify(productSummary)}
 
-                try {
-                    const result = await fetchGeminiWithRetry(userMsg, systemInstruction, chatbotSchema);
-                    const responseJson = JSON.parse(result.candidates[0].content.parts[0].text);
-                    
-                    const matchedProduct = PRODUCT_DATABASE.find(p => p.id === responseJson.recommendedProductId) || null;
+        回傳格式限制：必須為純 JSON，不可包含 markdown 符號（如 \`\`\`json）。
+        {
+            "replyText": "你的專業回覆",
+            "recommendedProductId": "對應的id"
+        }
+    `;
 
-                    setChatMessages(prev => [...prev, {
-                        sender: 'curator',
-                        text: responseJson.replyText,
-                        linkProduct: matchedProduct
-                    }]);
-                } catch (error) {
-                    setChatMessages(prev => [...prev, {
-                        sender: 'curator',
-                        text: "這部分我還在學習中，感謝您的耐心！不想讓您的需求被忽略，請您點擊下方連結聯繫客服人員，我們會立即為您處理；或者您可以說出關鍵字，例如『禮盒』、『交趾陶』或『運送方式』，我會盡力為您查找。",
-                        linkProduct: null
-                    }]);
-                } finally {
-                    setIsChatLoading(false);
-                }
-            };
+    try {
+        const result = await fetchGeminiWithRetry(userMsg, systemInstruction);
+        
+        // 2. 強化解析器：過濾掉 AI 可能多加的 markdown 符號
+        let rawText = result.candidates[0].content.parts[0].text;
+        const jsonMatch = rawText.match(/\{[\s\S]*\}/); // 嘗試抓取 JSON 部分
+        const cleanJson = jsonMatch ? jsonMatch[0] : rawText;
+        
+        const responseJson = JSON.parse(cleanJson);
+        
+        const matchedProduct = PRODUCT_DATABASE.find(p => p.id === responseJson.recommendedProductId) || null;
+
+        setChatMessages(prev => [...prev, {
+            sender: 'curator',
+            text: responseJson.replyText,
+            linkProduct: matchedProduct
+        }]);
+    } catch (error) {
+        console.error("解析失敗:", error);
+        // 3. 檢查是 API 回傳錯誤還是解析錯誤
+        setChatMessages(prev => [...prev, {
+            sender: 'curator',
+            text: "這部分我還在學習中，感謝您的耐心！請告訴我您想找的是『玄關辟邪』還是『新婚賀禮』呢？",
+            linkProduct: null
+        }]);
+    } finally {
+        setIsChatLoading(false);
+    }
+};
 
             const generateInscription = async () => {
                 if (!inscriptionInput.target.trim()) {
